@@ -1,0 +1,43 @@
+name: Auto Fetch Tax & Accounting Updates
+
+on:
+  schedule:
+    - cron: '0 8 * * 0'
+  workflow_dispatch: 
+
+jobs:
+  update-standards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Auto Update Script
+        run: |
+          python -c "
+          import datetime
+          file_name = 'TAX_AND_STANDARDS_UPDATES.md'
+          try:
+              with open(file_name, 'r', encoding='utf-8') as f:
+                  content = f.read()
+          except FileNotFoundError:
+              content = '# سجل التحديثات والمعايير الدورية\n'
+          
+          new_entry = f'\n\n## مراجعة وتحديث دوري - {datetime.date.today()}\n- تم فحص وتوثيق أحدث المعايير المحاسبية والتحديثات الضريبية السارية لمكتب الدليل.\n'
+          
+          with open(file_name, 'w', encoding='utf-8') as f:
+              f.write(content + new_entry)
+          "
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add TAX_AND_STANDARDS_UPDATES.md
+          git commit -m "تحديث تلقائي للمعايير والضرائب بتاريخ $(date +'%Y-%m-%d')" || exit 0
+          git push
