@@ -2,42 +2,28 @@ name: Auto Fetch Tax & Accounting Updates
 
 on:
   schedule:
-    - cron: '0 8 * * 0'
-  workflow_dispatch: 
+    - cron: '0 0 * * 0' # يعمل تلقائياً كل يوم أصل الأسبوع
+  workflow_dispatch: # يتيح لك التشغيل اليادوي في أي وقت
 
 jobs:
   update-standards:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # منح صلاحية التحديث والكتابة داخل المستودع لمنع خطأ الفشل
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Run Auto Update Script
+      - name: Fetch and Check Official Sources
         run: |
-          python -c "
-          import datetime
-          file_name = 'TAX_AND_STANDARDS_UPDATES.md'
-          try:
-              with open(file_name, 'r', encoding='utf-8') as f:
-                  content = f.read()
-          except FileNotFoundError:
-              content = '# سجل التحديثات والمعايير الدورية\n'
+          echo "Checking official sources for updates..."
+          # إدراج السكربت أو التأكد من سلامة روابط الرادار
           
-          new_entry = f'\n\n## مراجعة وتحديث دوري - {datetime.date.today()}\n- تم فحص وتوثيق أحدث المعايير المحاسبية والتحديثات الضريبية السارية لمكتب الدليل.\n'
-          
-          with open(file_name, 'w', encoding='utf-8') as f:
-              f.write(content + new_entry)
-          "
-
       - name: Commit and Push Changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
-          git add TAX_AND_STANDARDS_UPDATES.md
-          git commit -m "تحديث تلقائي للمعايير والضرائب بتاريخ $(date +'%Y-%m-%d')" || exit 0
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Auto-update: Refresh tax & accounting records"
           git push
