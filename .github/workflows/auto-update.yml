@@ -2,23 +2,25 @@ name: Auto Fetch Tax & Accounting Updates
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # يعمل تلقائياً كل يوم أصل الأسبوع
-  workflow_dispatch: # يتيح لك التشغيل اليادوي في أي وقت
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   update-standards:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # منح صلاحية التحديث والكتابة داخل المستودع لمنع خطأ الفشل
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Fetch and Check Official Sources
         run: |
           echo "Checking official sources for updates..."
-          # إدراج السكربت أو التأكد من سلامة روابط الرادار
           
       - name: Commit and Push Changes
         run: |
